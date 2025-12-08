@@ -5,7 +5,7 @@ class ApiConstants {
 
   static const String imageBaseUrl = 'https://image.tmdb.org/t/p';
 
-  static String get apiKey => dotenv.env['TMDB_API_KEY'] ?? '';
+  static String get bearerToken => dotenv.env['TMDB_BEARER_TOKEN'] ?? '';
 
   static const String popularMovies = '/movie/popular';
   static const String searchMovies = '/search/movie';
@@ -16,5 +16,5 @@ class ApiConstants {
   static const String posterSize = 'w500';
   static const String backdropSize = 'original';
 
-  static const String language = 'pt-BR';
+  static const String language = 'en-US';
 }
