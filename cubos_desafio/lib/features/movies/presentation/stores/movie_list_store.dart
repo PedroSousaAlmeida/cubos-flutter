@@ -24,7 +24,7 @@ abstract class _MovieListStoreBase with Store {
     required this.searchMovies,
   });
 
-  // ==================== OBSERVABLES ====================
+  // ==================== OBSERVAVEIS ====================
 
   @observable
   ObservableList<Movie> movies = ObservableList<Movie>();
@@ -39,12 +39,12 @@ abstract class _MovieListStoreBase with Store {
   String? errorMessage;
 
   @observable
-  int? selectedGenreId;
+  ObservableList<int> selectedGenreIds = ObservableList<int>();
 
   @observable
   String searchQuery = '';
 
-  // ==================== COMPUTED ====================
+  // ==================== COMPUTADOS ====================
 
   @computed
   bool get hasError => errorMessage != null;
@@ -55,7 +55,10 @@ abstract class _MovieListStoreBase with Store {
   @computed
   bool get hasGenres => genres.isNotEmpty;
 
-  // ==================== ACTIONS ====================
+  @computed
+  bool get hasSelectedGenres => selectedGenreIds.isNotEmpty;
+
+  // ==================== AÇÕES ====================
 
   @action
   Future<void> loadInitialData() async {
@@ -76,7 +79,7 @@ abstract class _MovieListStoreBase with Store {
       },
       (movieList) {
         movies = ObservableList.of(movieList);
-        selectedGenreId = null;
+        selectedGenreIds.clear();
         searchQuery = '';
         isLoading = false;
       },
@@ -98,30 +101,55 @@ abstract class _MovieListStoreBase with Store {
   }
 
   @action
-  Future<void> filterByGenre(int genreId) async {
-    if (selectedGenreId == genreId) {
-      // Se clicar no mesmo gênero, volta para popular
+  Future<void> toggleGenre(int genreId) async {
+    if (selectedGenreIds.contains(genreId)) {
+      selectedGenreIds.remove(genreId);
+    } else {
+      selectedGenreIds.add(genreId);
+    }
+
+    await _updateMoviesBySelectedGenres();
+  }
+
+  @action
+  Future<void> clearGenreFilters() async {
+    selectedGenreIds.clear();
+    await loadPopularMovies();
+  }
+
+  @action
+  Future<void> _updateMoviesBySelectedGenres() async {
+    if (selectedGenreIds.isEmpty) {
       await loadPopularMovies();
       return;
     }
 
     isLoading = true;
     errorMessage = null;
-    selectedGenreId = genreId;
     searchQuery = '';
 
-    final result = await getMoviesByGenre(GenreParams(genreId: genreId));
+    List<Movie> allMovies = [];
 
-    result.fold(
-      (failure) {
-        errorMessage = failure.message;
-        isLoading = false;
-      },
-      (movieList) {
-        movies = ObservableList.of(movieList);
-        isLoading = false;
-      },
-    );
+    for (int genreId in selectedGenreIds) {
+      final result = await getMoviesByGenre(GenreParams(genreId: genreId));
+
+      result.fold(
+        (failure) {
+          errorMessage = failure.message;
+        },
+        (movieList) {
+          allMovies.addAll(movieList);
+        },
+      );
+    }
+    
+    final uniqueMovies = <int, Movie>{};
+    for (var movie in allMovies) {
+      uniqueMovies[movie.id] = movie;
+    }
+
+    movies = ObservableList.of(uniqueMovies.values.toList());
+    isLoading = false;
   }
 
   @action
@@ -134,7 +162,7 @@ abstract class _MovieListStoreBase with Store {
     isLoading = true;
     errorMessage = null;
     searchQuery = query;
-    selectedGenreId = null;
+    selectedGenreIds.clear();
 
     final result = await searchMovies(SearchParams(query: query));
 

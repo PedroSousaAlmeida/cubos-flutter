@@ -30,6 +30,13 @@ mixin _$MovieListStore on _MovieListStoreBase, Store {
     () => super.hasGenres,
     name: '_MovieListStoreBase.hasGenres',
   )).value;
+  Computed<bool>? _$hasSelectedGenresComputed;
+
+  @override
+  bool get hasSelectedGenres => (_$hasSelectedGenresComputed ??= Computed<bool>(
+    () => super.hasSelectedGenres,
+    name: '_MovieListStoreBase.hasSelectedGenres',
+  )).value;
 
   late final _$moviesAtom = Atom(
     name: '_MovieListStoreBase.movies',
@@ -103,21 +110,21 @@ mixin _$MovieListStore on _MovieListStoreBase, Store {
     });
   }
 
-  late final _$selectedGenreIdAtom = Atom(
-    name: '_MovieListStoreBase.selectedGenreId',
+  late final _$selectedGenreIdsAtom = Atom(
+    name: '_MovieListStoreBase.selectedGenreIds',
     context: context,
   );
 
   @override
-  int? get selectedGenreId {
-    _$selectedGenreIdAtom.reportRead();
-    return super.selectedGenreId;
+  ObservableList<int> get selectedGenreIds {
+    _$selectedGenreIdsAtom.reportRead();
+    return super.selectedGenreIds;
   }
 
   @override
-  set selectedGenreId(int? value) {
-    _$selectedGenreIdAtom.reportWrite(value, super.selectedGenreId, () {
-      super.selectedGenreId = value;
+  set selectedGenreIds(ObservableList<int> value) {
+    _$selectedGenreIdsAtom.reportWrite(value, super.selectedGenreIds, () {
+      super.selectedGenreIds = value;
     });
   }
 
@@ -169,14 +176,36 @@ mixin _$MovieListStore on _MovieListStoreBase, Store {
     return _$loadGenresAsyncAction.run(() => super.loadGenres());
   }
 
-  late final _$filterByGenreAsyncAction = AsyncAction(
-    '_MovieListStoreBase.filterByGenre',
+  late final _$toggleGenreAsyncAction = AsyncAction(
+    '_MovieListStoreBase.toggleGenre',
     context: context,
   );
 
   @override
-  Future<void> filterByGenre(int genreId) {
-    return _$filterByGenreAsyncAction.run(() => super.filterByGenre(genreId));
+  Future<void> toggleGenre(int genreId) {
+    return _$toggleGenreAsyncAction.run(() => super.toggleGenre(genreId));
+  }
+
+  late final _$clearGenreFiltersAsyncAction = AsyncAction(
+    '_MovieListStoreBase.clearGenreFilters',
+    context: context,
+  );
+
+  @override
+  Future<void> clearGenreFilters() {
+    return _$clearGenreFiltersAsyncAction.run(() => super.clearGenreFilters());
+  }
+
+  late final _$_updateMoviesBySelectedGenresAsyncAction = AsyncAction(
+    '_MovieListStoreBase._updateMoviesBySelectedGenres',
+    context: context,
+  );
+
+  @override
+  Future<void> _updateMoviesBySelectedGenres() {
+    return _$_updateMoviesBySelectedGenresAsyncAction.run(
+      () => super._updateMoviesBySelectedGenres(),
+    );
   }
 
   late final _$searchMoviesByQueryAsyncAction = AsyncAction(
@@ -215,11 +244,12 @@ movies: ${movies},
 genres: ${genres},
 isLoading: ${isLoading},
 errorMessage: ${errorMessage},
-selectedGenreId: ${selectedGenreId},
+selectedGenreIds: ${selectedGenreIds},
 searchQuery: ${searchQuery},
 hasError: ${hasError},
 hasMovies: ${hasMovies},
-hasGenres: ${hasGenres}
+hasGenres: ${hasGenres},
+hasSelectedGenres: ${hasSelectedGenres}
     ''';
   }
 }

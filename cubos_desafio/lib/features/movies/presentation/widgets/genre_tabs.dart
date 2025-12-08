@@ -24,34 +24,43 @@ class GenreTabs extends StatelessWidget {
             itemBuilder: (context, index) {
               if (index == 0) {
                 // Botão "Todos"
-                final isSelected = store.selectedGenreId == null;
+                final isSelected = !store.hasSelectedGenres;
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),
                   child: FilterChip(
                     label: const Text('Todos'),
                     selected: isSelected,
-                    onSelected: (_) => store.loadPopularMovies(),
-                    selectedColor: Theme.of(context).primaryColor,
+                    onSelected: (_) => store.clearGenreFilters(),
+                    selectedColor: Colors.blue, // ← AZUL quando selecionado
+                    backgroundColor: Colors.grey[200],
                     labelStyle: TextStyle(
                       color: isSelected ? Colors.white : Colors.black87,
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.normal,
                     ),
                   ),
                 );
               }
 
               final genre = store.genres[index - 1];
-              final isSelected = store.selectedGenreId == genre.id;
+              final isSelected = store.selectedGenreIds.contains(genre.id);
 
               return Padding(
                 padding: const EdgeInsets.only(right: 8),
                 child: FilterChip(
                   label: Text(genre.name!),
                   selected: isSelected,
-                  onSelected: (_) => store.filterByGenre(genre.id!),
-                  selectedColor: Theme.of(context).primaryColor,
+                  onSelected: (_) => store.toggleGenre(genre.id!),
+                  selectedColor: Colors.blue, // ← AZUL quando selecionado
+                  backgroundColor: Colors.grey[200],
                   labelStyle: TextStyle(
                     color: isSelected ? Colors.white : Colors.black87,
+                    fontWeight: isSelected
+                        ? FontWeight.bold
+                        : FontWeight.normal,
                   ),
+                  checkmarkColor: Colors.white, // ← Checkmark branco
                 ),
               );
             },
