@@ -6,17 +6,17 @@ class Movie extends Equatable {
   final String overview;
   final String? posterPath;
   final String? backdropPath;
-  final double voteAverage;
-  final double popularity;
-  final int voteCount;
-  final String status;
-  final String tagline;
-  final String releaseDate;
-  final double revenue;
-  final double budget;
-  final int runtime;
+  final double? voteAverage;
+  final double? popularity;
+  final int? voteCount;
+  final String? status;
+  final String? tagline;
+  final String? releaseDate;
+  final double? revenue;
+  final double? budget;
+  final int? runtime;
   final List<int> genreIds;
-  final String homePage;
+  final String? homePage;
 
   const Movie({
     required this.id,
@@ -24,17 +24,17 @@ class Movie extends Equatable {
     required this.overview,
     this.posterPath,
     this.backdropPath,
-    required this.voteAverage,
-    required this.popularity,
-    required this.voteCount,
-    required this.status,
-    required this.tagline,
-    required this.releaseDate,
-    required this.revenue,
-    required this.budget,
-    required this.runtime,
+    this.voteAverage,
+    this.popularity,
+    this.voteCount,
+    this.status,
+    this.tagline,
+    this.releaseDate,
+    this.revenue,
+    this.budget,
+    this.runtime,
     required this.genreIds,
-    required this.homePage,
+    this.homePage,
   });
 
   String? get fullPosterPath {
