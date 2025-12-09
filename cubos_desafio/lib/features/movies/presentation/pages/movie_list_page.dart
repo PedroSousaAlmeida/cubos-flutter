@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:provider/provider.dart';
+import '../../../../injection_container.dart';
+import '../stores/movie_detail_store.dart';
 import '../stores/movie_list_store.dart';
 import '../widgets/genre_tabs.dart';
 import '../widgets/movie_card.dart';
+import 'movie_detail_page.dart';
 
 class MovieListPage extends StatefulWidget {
   const MovieListPage({super.key});
@@ -50,7 +53,11 @@ class _MovieListPageState extends State<MovieListPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Filmes'),
+        title: const Text(
+          'Filmes',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        centerTitle: false,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
@@ -78,7 +85,7 @@ class _MovieListPageState extends State<MovieListPage> {
                   },
                 ),
                 filled: true,
-                fillColor: Colors.white,
+                fillColor: Colors.grey[200],
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30),
                   borderSide: BorderSide.none,
@@ -151,7 +158,8 @@ class _MovieListPageState extends State<MovieListPage> {
                             crossAxisSpacing: 16,
                             mainAxisSpacing: 16,
                           ),
-                      itemCount: store.movies.length + (store.isLoadingMore ? 1 : 0),
+                      itemCount:
+                          store.movies.length + (store.isLoadingMore ? 1 : 0),
                       itemBuilder: (context, index) {
                         // Loading indicator no final
                         if (index == store.movies.length) {
@@ -172,8 +180,9 @@ class _MovieListPageState extends State<MovieListPage> {
                               context,
                               MaterialPageRoute(
                                 builder: (context) => Provider(
-                                  create: (_) => getIt<MovieDetailStore>()
-                                    ..loadMovieDetails(movie.id),
+                                  create: (_) =>
+                                      sl<MovieDetailStore>()
+                                        ..loadMovieDetails(movie.id),
                                   child: const MovieDetailPage(),
                                 ),
                               ),

@@ -35,6 +35,9 @@ class GenreTabs extends StatelessWidget {
                         onSelected: (_) => store.clearGenreFilters(),
                         selectedColor: Colors.blue,
                         backgroundColor: Colors.grey[200],
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(100),
+                        ),
                         labelStyle: TextStyle(
                           color: isSelected ? Colors.white : Colors.black87,
                           fontWeight: isSelected
@@ -62,6 +65,9 @@ class GenreTabs extends StatelessWidget {
                       onSelected: (_) => store.toggleGenre(genre.id!),
                       selectedColor: Colors.blue,
                       backgroundColor: Colors.grey[200],
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(100),
+                      ),
                       labelStyle: TextStyle(
                         color: isSelected ? Colors.white : Colors.black87,
                         fontWeight: isSelected

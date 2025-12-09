@@ -16,15 +16,38 @@ class MovieDetailPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Voltar',
-          style: TextStyle(color: Colors.black),
+        scrolledUnderElevation: 0,
+        automaticallyImplyLeading: false,
+        titleSpacing: 0,
+        title: Align(
+          alignment: Alignment.centerLeft,
+          child: Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: ElevatedButton.icon(
+              onPressed: () => Navigator.pop(context),
+              icon: const Icon(Icons.arrow_back, color: Colors.black, size: 20),
+              label: const Text(
+                'Voltar',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(100),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+              ),
+            ),
+          ),
         ),
       ),
       body: Observer(
@@ -40,11 +63,7 @@ class MovieDetailPage extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
-                    Icons.error_outline,
-                    size: 64,
-                    color: Colors.red,
-                  ),
+                  const Icon(Icons.error_outline, size: 64, color: Colors.red),
                   const SizedBox(height: 16),
                   Text(
                     store.errorMessage ?? 'Erro desconhecido',
@@ -62,9 +81,7 @@ class MovieDetailPage extends StatelessWidget {
 
           // Sem filme
           if (!store.hasMovie) {
-            return const Center(
-              child: Text('Nenhum detalhe encontrado'),
-            );
+            return const Center(child: Text('Nenhum detalhe encontrado'));
           }
 
           final movie = store.movie!;
@@ -83,55 +100,66 @@ class _MovieDetailContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 48),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Poster com Hero Animation
-          _buildPoster(),
+          // Poster centralizado
+          Center(child: _buildPoster()),
           const SizedBox(height: 16),
 
-          // Rating
-          _buildRating(),
+          // Rating centralizado
+          Center(child: _buildRating()),
           const SizedBox(height: 16),
 
-          // Título
-          _buildTitle(),
+          // Título centralizado
+          Center(child: _buildTitle()),
           const SizedBox(height: 8),
 
-          // Ano e Duração
-          _buildYearAndDuration(),
-          const SizedBox(height: 16),
-
-          // Gêneros
-          _buildGenres(context),
-          const SizedBox(height: 24),
-
-          // Descrição
-          _buildSection('Descrição', movie.overview),
-          const SizedBox(height: 16),
-
-          // Orçamento
-          if (movie.budget != null && movie.budget! > 0) ...[
-            _buildSection('ORÇAMENTO', _formatBudget(movie.budget!)),
+          // Título original centralizado
+          if (movie.originalTitle != null &&
+              movie.originalTitle!.isNotEmpty) ...[
+            Center(child: _buildOriginalTitle()),
             const SizedBox(height: 16),
           ],
 
-          // Produtoras
+          // Ano e Duração com background cinza
+          _buildYearAndDurationChips(),
+          const SizedBox(height: 16),
+
+          // Gêneros (fundo branco, borda preta)
+          _buildGenreChips(),
+          const SizedBox(height: 24),
+
+          // Descrição (à esquerda)
+          _buildSection('Descrição', movie.overview),
+          const SizedBox(height: 16),
+
+          // Orçamento (background cinza)
+          if (movie.budget != null && movie.budget! > 0) ...[
+            _buildGraySection('ORÇAMENTO', _formatBudget(movie.budget!)),
+            const SizedBox(height: 16),
+          ],
+
+          // Produtoras (background cinza)
           if (movie.productionCompanies.isNotEmpty) ...[
-            _buildSection(
+            _buildGraySection(
               'PRODUTORAS',
               movie.productionCompanies.map((e) => e.name).join(', '),
             ),
             const SizedBox(height: 16),
           ],
 
-          // Diretor
-          _buildDirector(),
-          if (_getDirectorNames().isNotEmpty) const SizedBox(height: 16),
+          // Diretor (à esquerda)
+          if (_getDirectorNames().isNotEmpty) ...[
+            _buildSection('Diretor', _getDirectorNames()),
+            const SizedBox(height: 16),
+          ],
 
-          // Elenco
-          _buildCast(),
+          // Elenco (à esquerda)
+          if (movie.cast.isNotEmpty) ...[
+            _buildSection('Elenco', _getCastNames()),
+          ],
         ],
       ),
     );
@@ -152,9 +180,7 @@ class _MovieDetailContent extends StatelessWidget {
                   width: 200,
                   height: 300,
                   color: Colors.grey[300],
-                  child: const Center(
-                    child: CircularProgressIndicator(),
-                  ),
+                  child: const Center(child: CircularProgressIndicator()),
                 ),
                 errorWidget: (context, url, error) => Container(
                   width: 200,
@@ -180,101 +206,114 @@ class _MovieDetailContent extends StatelessWidget {
       children: [
         Text(
           rating,
-          style: const TextStyle(
-            fontSize: 32,
-            fontWeight: FontWeight.bold,
-          ),
+          style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
         ),
-        const Text(
-          ' /10',
-          style: TextStyle(
-            fontSize: 18,
-            color: Colors.grey,
-          ),
-        ),
+        const Text(' /10', style: TextStyle(fontSize: 18, color: Colors.grey)),
       ],
     );
   }
 
   Widget _buildTitle() {
-    return Column(
-      children: [
-        Text(
-          movie.title,
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        if (movie.originalTitle != null &&
-            movie.originalTitle != movie.title) ...[
-          const SizedBox(height: 4),
-          Text(
-            'Título original: ${movie.originalTitle}',
-            style: const TextStyle(
-              fontSize: 14,
-              color: Colors.grey,
-              fontStyle: FontStyle.italic,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ],
+    return Text(
+      movie.title,
+      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+      textAlign: TextAlign.center,
     );
   }
 
-  Widget _buildYearAndDuration() {
+  Widget _buildOriginalTitle() {
+    return Text(
+      'Título original: ${movie.originalTitle}',
+      style: const TextStyle(
+        fontSize: 14,
+        color: Colors.grey,
+        fontStyle: FontStyle.italic,
+      ),
+    );
+  }
+
+  Widget _buildYearAndDurationChips() {
     final year = _getYear();
     final duration = _formatDuration();
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        if (year.isNotEmpty) ...[
-          Text(
-            'Ano: $year',
-            style: const TextStyle(fontSize: 16),
-          ),
+    return Center(
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          if (year.isNotEmpty)
+            Chip(
+              label: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Ano: ',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  Text(
+                    year,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                      fontSize: 20,
+                    ),
+                  ),
+                ],
+              ),
+              backgroundColor: Colors.grey[100],
+            ),
+          if (duration.isNotEmpty)
+            Chip(
+              label: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Duração: ',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  Text(
+                    duration,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                      fontSize: 20,
+                    ),
+                  ),
+                ],
+              ),
+              backgroundColor: Colors.grey[100],
+            ),
         ],
-        if (year.isNotEmpty && duration.isNotEmpty) ...[
-          const SizedBox(width: 8),
-          const Text(' | ', style: TextStyle(fontSize: 16)),
-          const SizedBox(width: 8),
-        ],
-        if (duration.isNotEmpty) ...[
-          Text(
-            'Duração: $duration',
-            style: const TextStyle(fontSize: 16),
-          ),
-        ],
-      ],
+      ),
     );
   }
 
-  Widget _buildGenres(BuildContext context) {
-    // Precisa do contexto para acessar o MovieListStore que tem a lista de genres
-    // Por enquanto, vamos mostrar apenas os IDs ou criar uma lista hardcoded
-    // Em uma implementação ideal, você passaria a lista de gêneros aqui
-
-    return Wrap(
-      alignment: WrapAlignment.center,
-      spacing: 8,
-      runSpacing: 8,
-      children: movie.genreIds.map((genreId) {
-        // Mapeamento básico de gêneros (você pode melhorar isso)
-        final genreName = _getGenreName(genreId);
-        return Chip(
-          label: Text(
-            genreName,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
+  Widget _buildGenreChips() {
+    return Center(
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: movie.genreIds.map((genreId) {
+          final genreName = _getGenreName(genreId);
+          return Chip(
+            label: Text(
+              genreName,
+              style: const TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ),
-          backgroundColor: Colors.blue,
-        );
-      }).toList(),
+            backgroundColor: Colors.white,
+            side: const BorderSide(color: Colors.grey, width: 1),
+          );
+        }).toList(),
+      ),
     );
   }
 
@@ -300,26 +339,30 @@ class _MovieDetailContent extends StatelessWidget {
     );
   }
 
-  Widget _buildDirector() {
-    final directors = _getDirectorNames();
-
-    if (directors.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    return _buildSection('Diretor', directors);
-  }
-
-  Widget _buildCast() {
-    if (movie.cast.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    // Pega os primeiros 5 atores
-    final topCast = movie.cast.take(5).toList();
-    final castNames = topCast.map((actor) => actor.name).join(', ');
-
-    return _buildSection('Elenco', castNames);
+  Widget _buildGraySection(String title, String content) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey[300],
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: RichText(
+        text: TextSpan(
+          style: const TextStyle(fontSize: 16, color: Colors.black),
+          children: [
+            TextSpan(
+              text: '$title: ',
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.grey,
+              ),
+            ),
+            TextSpan(text: content.isEmpty ? 'Não disponível' : content),
+          ],
+        ),
+      ),
+    );
   }
 
   // ==================== HELPERS ====================
@@ -365,8 +408,12 @@ class _MovieDetailContent extends StatelessWidget {
     return directors.map((d) => d.name).join(', ');
   }
 
+  String _getCastNames() {
+    final topCast = movie.cast.take(5).toList();
+    return topCast.map((actor) => actor.name).join(', ');
+  }
+
   String _getGenreName(int genreId) {
-    // Mapeamento de gêneros do TMDB
     const genreMap = {
       28: 'AÇÃO',
       12: 'AVENTURA',
