@@ -1,8 +1,12 @@
 import 'package:equatable/equatable.dart';
+import 'cast.dart';
+import 'crew.dart';
+import 'production_company.dart';
 
 class Movie extends Equatable {
   final int id;
   final String title;
+  final String? originalTitle;
   final String overview;
   final String? posterPath;
   final String? backdropPath;
@@ -17,10 +21,14 @@ class Movie extends Equatable {
   final int? runtime;
   final List<int> genreIds;
   final String? homePage;
+  final List<Cast> cast;
+  final List<Crew> crew;
+  final List<ProductionCompany> productionCompanies;
 
   const Movie({
     required this.id,
     required this.title,
+    this.originalTitle,
     required this.overview,
     this.posterPath,
     this.backdropPath,
@@ -35,6 +43,9 @@ class Movie extends Equatable {
     this.runtime,
     required this.genreIds,
     this.homePage,
+    this.cast = const [],
+    this.crew = const [],
+    this.productionCompanies = const [],
   });
 
   String? get fullPosterPath {
@@ -51,6 +62,7 @@ class Movie extends Equatable {
   List<Object?> get props => [
     id,
     title,
+    originalTitle,
     overview,
     posterPath,
     backdropPath,
@@ -65,5 +77,8 @@ class Movie extends Equatable {
     runtime,
     genreIds,
     homePage,
+    cast,
+    crew,
+    productionCompanies,
   ];
 }

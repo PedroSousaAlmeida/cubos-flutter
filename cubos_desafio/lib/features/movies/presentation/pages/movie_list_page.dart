@@ -84,7 +84,6 @@ class _MovieListPageState extends State<MovieListPage> {
                   borderSide: BorderSide.none,
                 ),
               ),
-              onChanged: (query) => store.searchWithDebounce(query),
               onSubmitted: (query) => store.searchMoviesByQuery(query),
             ),
           ),
@@ -169,8 +168,15 @@ class _MovieListPageState extends State<MovieListPage> {
                           movie: movie,
                           genres: store.genres,
                           onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(movie.title)),
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => Provider(
+                                  create: (_) => getIt<MovieDetailStore>()
+                                    ..loadMovieDetails(movie.id),
+                                  child: const MovieDetailPage(),
+                                ),
+                              ),
                             );
                           },
                         );

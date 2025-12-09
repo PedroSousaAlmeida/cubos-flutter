@@ -35,30 +35,33 @@ class MovieCard extends StatelessWidget {
           children: [
             // Poster
             Expanded(
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(12),
-                ),
-                child: movie.fullPosterPath != null
-                    ? CachedNetworkImage(
-                        imageUrl: movie.fullPosterPath!,
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        placeholder: (context, url) => Container(
-                          color: Colors.grey[300],
-                          child: const Center(
-                            child: CircularProgressIndicator(),
+              child: Hero(
+                tag: 'movie-${movie.id}',
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(12),
+                  ),
+                  child: movie.fullPosterPath != null
+                      ? CachedNetworkImage(
+                          imageUrl: movie.fullPosterPath!,
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          placeholder: (context, url) => Container(
+                            color: Colors.grey[300],
+                            child: const Center(
+                              child: CircularProgressIndicator(),
+                            ),
                           ),
-                        ),
-                        errorWidget: (context, url, error) => Container(
+                          errorWidget: (context, url, error) => Container(
+                            color: Colors.grey[300],
+                            child: const Icon(Icons.movie, size: 50),
+                          ),
+                        )
+                      : Container(
                           color: Colors.grey[300],
                           child: const Icon(Icons.movie, size: 50),
                         ),
-                      )
-                    : Container(
-                        color: Colors.grey[300],
-                        child: const Icon(Icons.movie, size: 50),
-                      ),
+                ),
               ),
             ),
 

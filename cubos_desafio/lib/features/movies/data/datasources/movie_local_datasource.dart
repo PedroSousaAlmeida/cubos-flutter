@@ -47,7 +47,6 @@ class MovieLocalDataSourceImpl implements MovieLocalDataSource {
   @override
   Future<List<MovieModel>> getCachedMovies() async {
     try {
-      // Verifica se cache expirou
       if (!await _isCacheValid('movies')) {
         throw CacheException('Cache expirado');
       }
@@ -73,14 +72,12 @@ class MovieLocalDataSourceImpl implements MovieLocalDataSource {
       final box = await Hive.openBox<Map>(moviesBoxName);
       await box.clear();
 
-      // Usa putAll em vez de loop (3x mais rápido)
       final moviesMap = <int, Map<String, dynamic>>{};
       for (var i = 0; i < movies.length; i++) {
         moviesMap[i] = movies[i].toJson();
       }
       await box.putAll(moviesMap);
 
-      // Atualiza timestamp
       await _updateCacheTimestamp('movies');
     } catch (e) {
       throw CacheException('Erro ao salvar filmes no cache');
@@ -142,7 +139,7 @@ class MovieLocalDataSourceImpl implements MovieLocalDataSource {
       final box = await Hive.openBox<Map>(genresBoxName);
       await box.clear();
 
-      // Usa putAll em vez de loop (3x mais rápido)
+
       final genresMap = <int, Map<String, dynamic>>{};
       for (var i = 0; i < genres.length; i++) {
         genresMap[i] = genres[i].toJson();

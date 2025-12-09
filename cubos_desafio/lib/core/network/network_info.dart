@@ -4,7 +4,6 @@ abstract class NetworkInfo {
   Future<bool> get isConnected;
 }
 
-/// Implementação usando InternetConnectionChecker
 class NetworkInfoImpl implements NetworkInfo {
   final InternetConnectionChecker connectionChecker;
 

@@ -9,9 +9,11 @@ import 'features/movies/data/datasources/movie_remote_datasource.dart';
 import 'features/movies/data/repositories/movie_repo_impl.dart';
 import 'features/movies/domain/repositories/movie_repository.dart';
 import 'features/movies/domain/usecases/get_genres.dart';
+import 'features/movies/domain/usecases/get_movie_details.dart';
 import 'features/movies/domain/usecases/get_movies_by_genre.dart';
 import 'features/movies/domain/usecases/get_popular_movies.dart';
 import 'features/movies/domain/usecases/search_movies.dart';
+import 'features/movies/presentation/stores/movie_detail_store.dart';
 import 'features/movies/presentation/stores/movie_list_store.dart';
 
 final sl = GetIt.instance;
@@ -29,11 +31,18 @@ Future<void> init() async {
     ),
   );
 
+  sl.registerFactory(
+    () => MovieDetailStore(
+      getMovieDetails: sl(),
+    ),
+  );
+
   // Use Cases
   sl.registerLazySingleton(() => GetPopularMovies(sl()));
   sl.registerLazySingleton(() => GetGenres(sl()));
   sl.registerLazySingleton(() => GetMoviesByGenre(sl()));
   sl.registerLazySingleton(() => SearchMovies(sl()));
+  sl.registerLazySingleton(() => GetMovieDetails(sl()));
 
   // Repository
   sl.registerLazySingleton<MovieRepository>(
