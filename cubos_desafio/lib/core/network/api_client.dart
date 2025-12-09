@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import '../constants/api_constants.dart';
 
 class ApiClient {
@@ -18,17 +19,20 @@ class ApiClient {
       ),
     );
 
-    _dio.interceptors.add(
-      LogInterceptor(
-        request: true,
-        requestHeader: true,
-        requestBody: true,
-        responseHeader: false,
-        responseBody: true,
-        error: true,
-        logPrint: (obj) => print(obj),
-      ),
-    );
+    // LogInterceptor APENAS em debug mode (performance)
+    if (kDebugMode) {
+      _dio.interceptors.add(
+        LogInterceptor(
+          request: true,
+          requestHeader: true,
+          requestBody: true,
+          responseHeader: false,
+          responseBody: true,
+          error: true,
+          logPrint: (obj) => print(obj),
+        ),
+      );
+    }
   }
 
   Dio get dio => _dio;

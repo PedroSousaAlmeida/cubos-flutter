@@ -92,6 +92,24 @@ mixin _$MovieListStore on _MovieListStoreBase, Store {
     });
   }
 
+  late final _$isLoadingMoreAtom = Atom(
+    name: '_MovieListStoreBase.isLoadingMore',
+    context: context,
+  );
+
+  @override
+  bool get isLoadingMore {
+    _$isLoadingMoreAtom.reportRead();
+    return super.isLoadingMore;
+  }
+
+  @override
+  set isLoadingMore(bool value) {
+    _$isLoadingMoreAtom.reportWrite(value, super.isLoadingMore, () {
+      super.isLoadingMore = value;
+    });
+  }
+
   late final _$errorMessageAtom = Atom(
     name: '_MovieListStoreBase.errorMessage',
     context: context,
@@ -146,6 +164,42 @@ mixin _$MovieListStore on _MovieListStoreBase, Store {
     });
   }
 
+  late final _$currentPageAtom = Atom(
+    name: '_MovieListStoreBase.currentPage',
+    context: context,
+  );
+
+  @override
+  int get currentPage {
+    _$currentPageAtom.reportRead();
+    return super.currentPage;
+  }
+
+  @override
+  set currentPage(int value) {
+    _$currentPageAtom.reportWrite(value, super.currentPage, () {
+      super.currentPage = value;
+    });
+  }
+
+  late final _$hasMorePagesAtom = Atom(
+    name: '_MovieListStoreBase.hasMorePages',
+    context: context,
+  );
+
+  @override
+  bool get hasMorePages {
+    _$hasMorePagesAtom.reportRead();
+    return super.hasMorePages;
+  }
+
+  @override
+  set hasMorePages(bool value) {
+    _$hasMorePagesAtom.reportWrite(value, super.hasMorePages, () {
+      super.hasMorePages = value;
+    });
+  }
+
   late final _$loadInitialDataAsyncAction = AsyncAction(
     '_MovieListStoreBase.loadInitialData',
     context: context,
@@ -174,16 +228,6 @@ mixin _$MovieListStore on _MovieListStoreBase, Store {
   @override
   Future<void> loadGenres() {
     return _$loadGenresAsyncAction.run(() => super.loadGenres());
-  }
-
-  late final _$toggleGenreAsyncAction = AsyncAction(
-    '_MovieListStoreBase.toggleGenre',
-    context: context,
-  );
-
-  @override
-  Future<void> toggleGenre(int genreId) {
-    return _$toggleGenreAsyncAction.run(() => super.toggleGenre(genreId));
   }
 
   late final _$clearGenreFiltersAsyncAction = AsyncAction(
@@ -220,10 +264,44 @@ mixin _$MovieListStore on _MovieListStoreBase, Store {
     );
   }
 
+  late final _$loadMoreMoviesAsyncAction = AsyncAction(
+    '_MovieListStoreBase.loadMoreMovies',
+    context: context,
+  );
+
+  @override
+  Future<void> loadMoreMovies() {
+    return _$loadMoreMoviesAsyncAction.run(() => super.loadMoreMovies());
+  }
+
   late final _$_MovieListStoreBaseActionController = ActionController(
     name: '_MovieListStoreBase',
     context: context,
   );
+
+  @override
+  void toggleGenre(int genreId) {
+    final _$actionInfo = _$_MovieListStoreBaseActionController.startAction(
+      name: '_MovieListStoreBase.toggleGenre',
+    );
+    try {
+      return super.toggleGenre(genreId);
+    } finally {
+      _$_MovieListStoreBaseActionController.endAction(_$actionInfo);
+    }
+  }
+
+  @override
+  void searchWithDebounce(String query) {
+    final _$actionInfo = _$_MovieListStoreBaseActionController.startAction(
+      name: '_MovieListStoreBase.searchWithDebounce',
+    );
+    try {
+      return super.searchWithDebounce(query);
+    } finally {
+      _$_MovieListStoreBaseActionController.endAction(_$actionInfo);
+    }
+  }
 
   @override
   void clearError() {
@@ -243,9 +321,12 @@ mixin _$MovieListStore on _MovieListStoreBase, Store {
 movies: ${movies},
 genres: ${genres},
 isLoading: ${isLoading},
+isLoadingMore: ${isLoadingMore},
 errorMessage: ${errorMessage},
 selectedGenreIds: ${selectedGenreIds},
 searchQuery: ${searchQuery},
+currentPage: ${currentPage},
+hasMorePages: ${hasMorePages},
 hasError: ${hasError},
 hasMovies: ${hasMovies},
 hasGenres: ${hasGenres},

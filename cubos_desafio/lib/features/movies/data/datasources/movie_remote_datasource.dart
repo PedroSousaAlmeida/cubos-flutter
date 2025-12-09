@@ -6,11 +6,15 @@ import '../models/movie_model.dart';
 
 /// Interface do Remote Data Source
 abstract class MovieRemoteDataSource {
-  Future<List<MovieModel>> getPopularMovies();
+  Future<List<MovieModel>> getPopularMovies({int page = 1});
   Future<MovieModel> getMovieDetails(int movieId);
-  Future<List<MovieModel>> searchMovies(String query);
+  Future<List<MovieModel>> searchMovies(String query, {int page = 1});
   Future<List<GenreModel>> getGenres();
-  Future<List<MovieModel>> getMoviesByGenre(int genreId);
+  Future<List<MovieModel>> getMoviesByGenre(int genreId, {int page = 1});
+  Future<List<MovieModel>> getMoviesByGenres(
+    List<int> genreIds, {
+    int page = 1,
+  });
 }
 
 /// Implementação que busca dados da API TMDB
@@ -20,9 +24,12 @@ class MovieRemoteDataSourceImpl implements MovieRemoteDataSource {
   MovieRemoteDataSourceImpl({required this.dio});
 
   @override
-  Future<List<MovieModel>> getPopularMovies() async {
+  Future<List<MovieModel>> getPopularMovies({int page = 1}) async {
     try {
-      final response = await dio.get(ApiConstants.popularMovies);
+      final response = await dio.get(
+        ApiConstants.popularMovies,
+        queryParameters: {'page': page},
+      );
 
       if (response.statusCode == 200) {
         final results = response.data['results'] as List;
@@ -51,11 +58,11 @@ class MovieRemoteDataSourceImpl implements MovieRemoteDataSource {
   }
 
   @override
-  Future<List<MovieModel>> searchMovies(String query) async {
+  Future<List<MovieModel>> searchMovies(String query, {int page = 1}) async {
     try {
       final response = await dio.get(
         ApiConstants.searchMovies,
-        queryParameters: {'query': query},
+        queryParameters: {'query': query, 'page': page},
       );
 
       if (response.statusCode == 200) {
@@ -86,11 +93,11 @@ class MovieRemoteDataSourceImpl implements MovieRemoteDataSource {
   }
 
   @override
-  Future<List<MovieModel>> getMoviesByGenre(int genreId) async {
+  Future<List<MovieModel>> getMoviesByGenre(int genreId, {int page = 1}) async {
     try {
       final response = await dio.get(
         ApiConstants.discoverMovies,
-        queryParameters: {'with_genres': genreId},
+        queryParameters: {'with_genres': genreId, 'page': page},
       );
 
       if (response.statusCode == 200) {
@@ -98,6 +105,31 @@ class MovieRemoteDataSourceImpl implements MovieRemoteDataSource {
         return results.map((json) => MovieModel.fromJson(json)).toList();
       } else {
         throw ServerException('Erro ao buscar filmes por gênero');
+      }
+    } on DioException catch (e) {
+      throw ServerException(e.message ?? 'Erro de servidor');
+    }
+  }
+
+  @override
+  Future<List<MovieModel>> getMoviesByGenres(
+    List<int> genreIds, {
+    int page = 1,
+  }) async {
+    try {
+      // Converte [28, 53, 12] em "28,53,12"
+      final genresParam = genreIds.join(',');
+
+      final response = await dio.get(
+        ApiConstants.discoverMovies,
+        queryParameters: {'with_genres': genresParam, 'page': page},
+      );
+
+      if (response.statusCode == 200) {
+        final results = response.data['results'] as List;
+        return results.map((json) => MovieModel.fromJson(json)).toList();
+      } else {
+        throw ServerException('Erro ao buscar filmes por gêneros');
       }
     } on DioException catch (e) {
       throw ServerException(e.message ?? 'Erro de servidor');

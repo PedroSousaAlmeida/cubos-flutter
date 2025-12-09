@@ -5,7 +5,7 @@ import '../../../../core/usecases/usecase.dart';
 import '../entities/movie.dart';
 import '../repositories/movie_repository.dart';
 
-/// UseCase para buscar filmes por gênero
+/// UseCase para buscar filmes por gênero(s)
 class GetMoviesByGenre implements UseCase<List<Movie>, GenreParams> {
   final MovieRepository repository;
 
@@ -13,20 +13,25 @@ class GetMoviesByGenre implements UseCase<List<Movie>, GenreParams> {
 
   @override
   Future<Either<Failure, List<Movie>>> call(GenreParams params) async {
-    if (params.genreId <= 0) {
-      return const Left(ValidationFailure('ID do gênero inválido'));
+    if (params.genreIds.isEmpty) {
+      return const Left(ValidationFailure('Lista de gêneros vazia'));
     }
 
-    return await repository.getMoviesByGenre(params.genreId);
+    if (params.genreIds.any((id) => id <= 0)) {
+      return const Left(ValidationFailure('ID de gênero inválido'));
+    }
+
+    return await repository.getMoviesByGenres(params.genreIds, page: params.page);
   }
 }
 
-/// Parâmetros para filtrar por gênero
+/// Parâmetros para filtrar por gênero(s)
 class GenreParams extends Equatable {
-  final int genreId;
+  final List<int> genreIds;
+  final int page;
 
-  const GenreParams({required this.genreId});
+  const GenreParams({required this.genreIds, this.page = 1});
 
   @override
-  List<Object> get props => [genreId];
+  List<Object> get props => [genreIds, page];
 }

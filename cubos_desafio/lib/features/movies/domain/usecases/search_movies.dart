@@ -17,17 +17,18 @@ class SearchMovies implements UseCase<List<Movie>, SearchParams> {
     if (params.query.trim().isEmpty) {
       return const Left(ValidationFailure('Query não pode ser vazia'));
     }
-    
-    return await repository.searchMovies(params.query);
+
+    return await repository.searchMovies(params.query, page: params.page);
   }
 }
 
 /// Parâmetros para busca
 class SearchParams extends Equatable {
   final String query;
+  final int page;
 
-  const SearchParams({required this.query});
+  const SearchParams({required this.query, this.page = 1});
 
   @override
-  List<Object> get props => [query];
+  List<Object> get props => [query, page];
 }

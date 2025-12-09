@@ -8,13 +8,6 @@ import '../../domain/repositories/movie_repository.dart';
 import '../datasources/movie_local_datasource.dart';
 import '../datasources/movie_remote_datasource.dart';
 
-/// Implementação concreta do MovieRepository
-///
-/// Responsabilidades:
-/// - Decidir se busca dados remotos ou locais
-/// - Gerenciar cache
-/// - Converter exceptions em failures
-/// - Aplicar regra: "tente remoto, se falhar use cache"
 class MovieRepositoryImpl implements MovieRepository {
   final MovieRemoteDataSource remoteDataSource;
   final MovieLocalDataSource localDataSource;
@@ -27,16 +20,15 @@ class MovieRepositoryImpl implements MovieRepository {
   });
 
   @override
-  Future<Either<Failure, List<Movie>>> getPopularMovies() async {
-    // Verifica se tem internet
+  Future<Either<Failure, List<Movie>>> getPopularMovies({int page = 1}) async {
     if (await networkInfo.isConnected) {
       try {
-        // Tenta buscar da API
-        final remoteMovies = await remoteDataSource.getPopularMovies();
-
-        // Salva no cache para uso offline
-        await localDataSource.cacheMovies(remoteMovies);
-
+        final remoteMovies = await remoteDataSource.getPopularMovies(
+          page: page,
+        );
+        if (page == 1) {
+          await localDataSource.cacheMovies(remoteMovies);
+        }
         return Right(remoteMovies);
       } on ServerException catch (e) {
         return Left(ServerFailure(e.message));
@@ -44,12 +36,17 @@ class MovieRepositoryImpl implements MovieRepository {
         return Left(NetworkFailure(e.message));
       }
     } else {
-      // Sem internet, tenta buscar do cache
-      try {
-        final localMovies = await localDataSource.getCachedMovies();
-        return Right(localMovies);
-      } on CacheException catch (e) {
-        return Left(CacheFailure(e.message));
+      if (page == 1) {
+        try {
+          final localMovies = await localDataSource.getCachedMovies();
+          return Right(localMovies);
+        } on CacheException catch (e) {
+          return Left(CacheFailure(e.message));
+        }
+      } else {
+        return const Left(
+          NetworkFailure('Paginação requer conexão com internet'),
+        );
       }
     }
   }
@@ -77,11 +74,13 @@ class MovieRepositoryImpl implements MovieRepository {
   }
 
   @override
-  Future<Either<Failure, List<Movie>>> searchMovies(String query) async {
-    // Busca sempre requer internet
+  Future<Either<Failure, List<Movie>>> searchMovies(
+    String query, {
+    int page = 1,
+  }) async {
     if (await networkInfo.isConnected) {
       try {
-        final movies = await remoteDataSource.searchMovies(query);
+        final movies = await remoteDataSource.searchMovies(query, page: page);
         return Right(movies);
       } on ServerException catch (e) {
         return Left(ServerFailure(e.message));
@@ -116,10 +115,16 @@ class MovieRepositoryImpl implements MovieRepository {
   }
 
   @override
-  Future<Either<Failure, List<Movie>>> getMoviesByGenre(int genreId) async {
+  Future<Either<Failure, List<Movie>>> getMoviesByGenre(
+    int genreId, {
+    int page = 1,
+  }) async {
     if (await networkInfo.isConnected) {
       try {
-        final movies = await remoteDataSource.getMoviesByGenre(genreId);
+        final movies = await remoteDataSource.getMoviesByGenre(
+          genreId,
+          page: page,
+        );
         return Right(movies);
       } on ServerException catch (e) {
         return Left(ServerFailure(e.message));
@@ -127,15 +132,58 @@ class MovieRepositoryImpl implements MovieRepository {
         return Left(NetworkFailure(e.message));
       }
     } else {
-      // Tenta filtrar do cache local
+      if (page == 1) {
+        try {
+          final allMovies = await localDataSource.getCachedMovies();
+          final filteredMovies = allMovies
+              .where((movie) => movie.genreIds.contains(genreId))
+              .toList();
+          return Right(filteredMovies);
+        } on CacheException catch (e) {
+          return Left(CacheFailure(e.message));
+        }
+      } else {
+        return const Left(
+          NetworkFailure('Paginação requer conexão com internet'),
+        );
+      }
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<Movie>>> getMoviesByGenres(
+    List<int> genreIds, {
+    int page = 1,
+  }) async {
+    if (await networkInfo.isConnected) {
       try {
-        final allMovies = await localDataSource.getCachedMovies();
-        final filteredMovies = allMovies
-            .where((movie) => movie.genreIds.contains(genreId))
-            .toList();
-        return Right(filteredMovies);
-      } on CacheException catch (e) {
-        return Left(CacheFailure(e.message));
+        final movies = await remoteDataSource.getMoviesByGenres(
+          genreIds,
+          page: page,
+        );
+        return Right(movies);
+      } on ServerException catch (e) {
+        return Left(ServerFailure(e.message));
+      } on NetworkException catch (e) {
+        return Left(NetworkFailure(e.message));
+      }
+    } else {
+      if (page == 1) {
+        try {
+          final allMovies = await localDataSource.getCachedMovies();
+          final filteredMovies = allMovies
+              .where(
+                (movie) => movie.genreIds.any((id) => genreIds.contains(id)),
+              )
+              .toList();
+          return Right(filteredMovies);
+        } on CacheException catch (e) {
+          return Left(CacheFailure(e.message));
+        }
+      } else {
+        return const Left(
+          NetworkFailure('Paginação requer conexão com internet'),
+        );
       }
     }
   }

@@ -14,18 +14,33 @@ class MovieListPage extends StatefulWidget {
 
 class _MovieListPageState extends State<MovieListPage> {
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<MovieListStore>().loadInitialData();
+      final store = context.read<MovieListStore>();
+      store.loadInitialData();
+      _scrollController.addListener(() => _onScroll(store));
     });
+  }
+
+  void _onScroll(MovieListStore store) {
+    // Detecta quando está em 80% do scroll
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.position.pixels;
+    final delta = 0.8 * maxScroll;
+
+    if (currentScroll >= delta) {
+      store.loadMoreMovies();
+    }
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -36,8 +51,9 @@ class _MovieListPageState extends State<MovieListPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Filmes'),
-        backgroundColor: Theme.of(context).primaryColor,
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(60),
           child: Padding(
@@ -68,6 +84,7 @@ class _MovieListPageState extends State<MovieListPage> {
                   borderSide: BorderSide.none,
                 ),
               ),
+              onChanged: (query) => store.searchWithDebounce(query),
               onSubmitted: (query) => store.searchMoviesByQuery(query),
             ),
           ),
@@ -124,8 +141,9 @@ class _MovieListPageState extends State<MovieListPage> {
                       );
                     }
 
-                    // Grid de Filmes
+                    // Grid de Filmes com Infinite Scroll
                     return GridView.builder(
+                      controller: _scrollController,
                       padding: const EdgeInsets.all(16),
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
@@ -134,8 +152,18 @@ class _MovieListPageState extends State<MovieListPage> {
                             crossAxisSpacing: 16,
                             mainAxisSpacing: 16,
                           ),
-                      itemCount: store.movies.length,
+                      itemCount: store.movies.length + (store.isLoadingMore ? 1 : 0),
                       itemBuilder: (context, index) {
+                        // Loading indicator no final
+                        if (index == store.movies.length) {
+                          return const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(16.0),
+                              child: CircularProgressIndicator(),
+                            ),
+                          );
+                        }
+
                         final movie = store.movies[index];
                         return MovieCard(
                           movie: movie,

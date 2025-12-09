@@ -1,11 +1,14 @@
+import 'dart:async';
+import 'package:dartz/dartz.dart';
 import 'package:mobx/mobx.dart';
+import '../../../../core/errors/failures.dart';
+import '../../../../core/usecases/usecase.dart';
 import '../../domain/entities/genre.dart';
 import '../../domain/entities/movie.dart';
 import '../../domain/usecases/get_genres.dart';
 import '../../domain/usecases/get_movies_by_genre.dart';
 import '../../domain/usecases/get_popular_movies.dart';
 import '../../domain/usecases/search_movies.dart';
-import '../../../../core/usecases/usecase.dart';
 
 part 'movie_list_store.g.dart';
 
@@ -36,6 +39,9 @@ abstract class _MovieListStoreBase with Store {
   bool isLoading = false;
 
   @observable
+  bool isLoadingMore = false;
+
+  @observable
   String? errorMessage;
 
   @observable
@@ -43,6 +49,15 @@ abstract class _MovieListStoreBase with Store {
 
   @observable
   String searchQuery = '';
+
+  @observable
+  int currentPage = 1;
+
+  @observable
+  bool hasMorePages = true;
+
+  // Timer para debounce
+  Timer? _debounceTimer;
 
   // ==================== COMPUTADOS ====================
 
@@ -69,8 +84,10 @@ abstract class _MovieListStoreBase with Store {
   Future<void> loadPopularMovies() async {
     isLoading = true;
     errorMessage = null;
+    currentPage = 1;
+    hasMorePages = true;
 
-    final result = await getPopularMovies(const NoParams());
+    final result = await getPopularMovies(const PopularMoviesParams(page: 1));
 
     result.fold(
       (failure) {
@@ -81,6 +98,7 @@ abstract class _MovieListStoreBase with Store {
         movies = ObservableList.of(movieList);
         selectedGenreIds.clear();
         searchQuery = '';
+        hasMorePages = movieList.length == 20;
         isLoading = false;
       },
     );
@@ -101,14 +119,21 @@ abstract class _MovieListStoreBase with Store {
   }
 
   @action
-  Future<void> toggleGenre(int genreId) async {
-    if (selectedGenreIds.contains(genreId)) {
-      selectedGenreIds.remove(genreId);
+  void toggleGenre(int genreId) {
+    // RECRIA a lista para forçar notificação do Observer
+    final currentIds = selectedGenreIds.toList();
+
+    if (currentIds.contains(genreId)) {
+      currentIds.remove(genreId);
     } else {
-      selectedGenreIds.add(genreId);
+      currentIds.add(genreId);
     }
 
-    await _updateMoviesBySelectedGenres();
+    // Atribui nova lista (isso GARANTE que Observer detecta)
+    selectedGenreIds = ObservableList.of(currentIds);
+
+    // Busca filmes em background
+    _updateMoviesBySelectedGenres();
   }
 
   @action
@@ -127,29 +152,25 @@ abstract class _MovieListStoreBase with Store {
     isLoading = true;
     errorMessage = null;
     searchQuery = '';
+    currentPage = 1;
+    hasMorePages = true;
 
-    List<Movie> allMovies = [];
+    // UMA ÚNICA REQUISIÇÃO com todos os gêneros selecionados
+    final result = await getMoviesByGenre(
+      GenreParams(genreIds: selectedGenreIds.toList(), page: 1),
+    );
 
-    for (int genreId in selectedGenreIds) {
-      final result = await getMoviesByGenre(GenreParams(genreId: genreId));
-
-      result.fold(
-        (failure) {
-          errorMessage = failure.message;
-        },
-        (movieList) {
-          allMovies.addAll(movieList);
-        },
-      );
-    }
-    
-    final uniqueMovies = <int, Movie>{};
-    for (var movie in allMovies) {
-      uniqueMovies[movie.id] = movie;
-    }
-
-    movies = ObservableList.of(uniqueMovies.values.toList());
-    isLoading = false;
+    result.fold(
+      (failure) {
+        errorMessage = failure.message;
+        isLoading = false;
+      },
+      (movieList) {
+        movies = ObservableList.of(movieList);
+        hasMorePages = movieList.length == 20;
+        isLoading = false;
+      },
+    );
   }
 
   @action
@@ -163,8 +184,10 @@ abstract class _MovieListStoreBase with Store {
     errorMessage = null;
     searchQuery = query;
     selectedGenreIds.clear();
+    currentPage = 1;
+    hasMorePages = true;
 
-    final result = await searchMovies(SearchParams(query: query));
+    final result = await searchMovies(SearchParams(query: query, page: 1));
 
     result.fold(
       (failure) {
@@ -173,9 +196,58 @@ abstract class _MovieListStoreBase with Store {
       },
       (movieList) {
         movies = ObservableList.of(movieList);
+        hasMorePages = movieList.length == 20;
         isLoading = false;
       },
     );
+  }
+
+  @action
+  Future<void> loadMoreMovies() async {
+    if (isLoadingMore || !hasMorePages || isLoading) return;
+
+    isLoadingMore = true;
+    currentPage++;
+
+    Either<Failure, List<Movie>>? result;
+
+    // Decide qual método chamar baseado no estado atual
+    if (searchQuery.isNotEmpty) {
+      // Se está buscando
+      result = await searchMovies(
+        SearchParams(query: searchQuery, page: currentPage),
+      );
+    } else if (selectedGenreIds.isNotEmpty) {
+      // Se tem gêneros selecionados
+      result = await getMoviesByGenre(
+        GenreParams(genreIds: selectedGenreIds.toList(), page: currentPage),
+      );
+    } else {
+      // Filmes populares
+      result = await getPopularMovies(PopularMoviesParams(page: currentPage));
+    }
+
+    result.fold(
+      (failure) {
+        errorMessage = failure.message;
+        currentPage--; // Reverte página em caso de erro
+        isLoadingMore = false;
+      },
+      (movieList) {
+        movies.addAll(movieList);
+        hasMorePages =
+            movieList.length == 20; // Se retornou menos de 20, acabou
+        isLoadingMore = false;
+      },
+    );
+  }
+
+  @action
+  void searchWithDebounce(String query) {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+      searchMoviesByQuery(query);
+    });
   }
 
   @action
