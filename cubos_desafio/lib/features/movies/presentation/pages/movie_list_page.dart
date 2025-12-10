@@ -100,21 +100,21 @@ class _MovieListPageState extends State<MovieListPage> {
         children: [
           Column(
             children: [
-              // Tabs de Gêneros
+            
               GenreTabs(store: store),
 
               const SizedBox(height: 8),
 
-              // Lista de Filmes
+            
               Expanded(
                 child: Observer(
                   builder: (_) {
-                    // Loading inicial (sem filmes)
+                    
                     if (store.isLoading && !store.hasMovies) {
                       return const Center(child: CircularProgressIndicator());
                     }
 
-                    // Erro
+                   
                     if (store.hasError && !store.hasMovies) {
                       return Center(
                         child: Column(
@@ -140,14 +140,14 @@ class _MovieListPageState extends State<MovieListPage> {
                       );
                     }
 
-                    // Vazio
+                    
                     if (!store.hasMovies) {
                       return const Center(
                         child: Text('Nenhum filme encontrado'),
                       );
                     }
 
-                    // Grid de Filmes com Infinite Scroll
+                    
                     return GridView.builder(
                       controller: _scrollController,
                       padding: const EdgeInsets.all(16),
@@ -197,7 +197,7 @@ class _MovieListPageState extends State<MovieListPage> {
             ],
           ),
 
-          // ⏳ LOADING GLOBAL OVERLAY
+
           Observer(
             builder: (_) {
               if (store.isLoading && store.hasMovies) {

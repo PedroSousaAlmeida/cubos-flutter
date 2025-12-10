@@ -23,7 +23,7 @@ class GenreTabs extends StatelessWidget {
             itemCount: store.genres.length + 1, // +1 para "Todos"
             itemBuilder: (context, index) {
               if (index == 0) {
-                // Botão "Todos" - Observer individual
+                
                 return Observer(
                   builder: (_) {
                     final isSelected = !store.hasSelectedGenres;

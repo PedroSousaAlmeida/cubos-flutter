@@ -113,7 +113,7 @@ class MovieLocalDataSourceImpl implements MovieLocalDataSource {
   @override
   Future<List<GenreModel>> getCachedGenres() async {
     try {
-      // Verifica se cache expirou
+
       if (!await _isCacheValid('genres')) {
         throw CacheException('Cache expirado');
       }

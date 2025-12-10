@@ -9,13 +9,10 @@ import 'injection_container.dart' as di;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Carregar variáveis de ambiente
   await dotenv.load(fileName: ".env");
 
-  // Inicializar dependências
   await di.init();
 
-  // Debug: Verificar API Key
   print('🚀 App iniciado!');
   print(
     '🔑 Bearer Token configurado: ${dotenv.env['TMDB_BEARER_TOKEN']?.isNotEmpty ?? false}',
@@ -42,7 +39,7 @@ class MyApp extends StatelessWidget {
       ),
       home: Provider<MovieListStore>(
         create: (_) => di.sl<MovieListStore>(),
-        dispose: (_, __) {}, // Store é factory, GetIt gerencia
+        dispose: (_, __) {},
         child: const MovieListPage(),
       ),
     );

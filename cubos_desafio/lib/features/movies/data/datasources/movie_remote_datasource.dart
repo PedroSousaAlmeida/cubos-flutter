@@ -4,7 +4,7 @@ import '../../../../core/errors/exceptions.dart';
 import '../models/genre_model.dart';
 import '../models/movie_model.dart';
 
-/// Interface do Remote Data Source
+
 abstract class MovieRemoteDataSource {
   Future<List<MovieModel>> getPopularMovies({int page = 1});
   Future<MovieModel> getMovieDetails(int movieId);
@@ -17,7 +17,7 @@ abstract class MovieRemoteDataSource {
   });
 }
 
-/// Implementação que busca dados da API TMDB
+
 class MovieRemoteDataSourceImpl implements MovieRemoteDataSource {
   final Dio dio;
 
@@ -47,9 +47,7 @@ class MovieRemoteDataSourceImpl implements MovieRemoteDataSource {
     try {
       final response = await dio.get(
         '${ApiConstants.movieDetails}/$movieId',
-        queryParameters: {
-          'append_to_response': 'credits',
-        },
+        queryParameters: {'append_to_response': 'credits'},
       );
 
       if (response.statusCode == 200) {
@@ -122,7 +120,6 @@ class MovieRemoteDataSourceImpl implements MovieRemoteDataSource {
     int page = 1,
   }) async {
     try {
-      // Converte [28, 53, 12] em "28,53,12"
       final genresParam = genreIds.join(',');
 
       final response = await dio.get(

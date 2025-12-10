@@ -65,13 +65,11 @@ class MovieCard extends StatelessWidget {
               ),
             ),
 
-            // Info
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Título
                   Text(
                     movie.title,
                     maxLines: 2,
@@ -82,8 +80,6 @@ class MovieCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-
-                  // Gêneros
                   if (_getGenreNames().isNotEmpty)
                     Text(
                       _getGenreNames(),
@@ -93,7 +89,6 @@ class MovieCard extends StatelessWidget {
                     ),
                   const SizedBox(height: 4),
 
-                  // Nota
                   Row(
                     children: [
                       const Icon(Icons.star, color: Colors.amber, size: 16),

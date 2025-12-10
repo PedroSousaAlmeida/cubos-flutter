@@ -52,12 +52,10 @@ class MovieDetailPage extends StatelessWidget {
       ),
       body: Observer(
         builder: (_) {
-          // Loading inicial
           if (store.isLoading && !store.hasMovie) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          // Erro
           if (store.hasError && !store.hasMovie) {
             return Center(
               child: Column(
@@ -79,7 +77,7 @@ class MovieDetailPage extends StatelessWidget {
             );
           }
 
-          // Sem filme
+
           if (!store.hasMovie) {
             return const Center(child: Text('Nenhum detalhe encontrado'));
           }
@@ -104,44 +102,44 @@ class _MovieDetailContent extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Poster centralizado
+         
           Center(child: _buildPoster()),
           const SizedBox(height: 16),
 
-          // Rating centralizado
+          
           Center(child: _buildRating()),
           const SizedBox(height: 16),
 
-          // Título centralizado
+         
           Center(child: _buildTitle()),
           const SizedBox(height: 8),
 
-          // Título original centralizado
+          
           if (movie.originalTitle != null &&
               movie.originalTitle!.isNotEmpty) ...[
             Center(child: _buildOriginalTitle()),
             const SizedBox(height: 16),
           ],
 
-          // Ano e Duração com background cinza
+          
           _buildYearAndDurationChips(),
           const SizedBox(height: 16),
 
-          // Gêneros (fundo branco, borda preta)
+         
           _buildGenreChips(),
           const SizedBox(height: 24),
 
-          // Descrição (à esquerda)
+          
           _buildSection('Descrição', movie.overview),
           const SizedBox(height: 16),
 
-          // Orçamento (background cinza)
+         
           if (movie.budget != null && movie.budget! > 0) ...[
             _buildGraySection('ORÇAMENTO', _formatBudget(movie.budget!)),
             const SizedBox(height: 16),
           ],
 
-          // Produtoras (background cinza)
+          
           if (movie.productionCompanies.isNotEmpty) ...[
             _buildGraySection(
               'PRODUTORAS',
@@ -150,13 +148,13 @@ class _MovieDetailContent extends StatelessWidget {
             const SizedBox(height: 16),
           ],
 
-          // Diretor (à esquerda)
+          
           if (_getDirectorNames().isNotEmpty) ...[
             _buildSection('Diretor', _getDirectorNames()),
             const SizedBox(height: 16),
           ],
 
-          // Elenco (à esquerda)
+          
           if (movie.cast.isNotEmpty) ...[
             _buildSection('Elenco', _getCastNames()),
           ],

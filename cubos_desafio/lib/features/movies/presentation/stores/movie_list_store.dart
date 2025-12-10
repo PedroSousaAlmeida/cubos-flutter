@@ -56,7 +56,6 @@ abstract class _MovieListStoreBase with Store {
   @observable
   bool hasMorePages = true;
 
-  // Timer para debounce
   Timer? _debounceTimer;
 
   // ==================== COMPUTADOS ====================
@@ -120,7 +119,7 @@ abstract class _MovieListStoreBase with Store {
 
   @action
   void toggleGenre(int genreId) {
-    // RECRIA a lista para forçar notificação do Observer
+  
     final currentIds = selectedGenreIds.toList();
 
     if (currentIds.contains(genreId)) {
@@ -129,10 +128,10 @@ abstract class _MovieListStoreBase with Store {
       currentIds.add(genreId);
     }
 
-    // Atribui nova lista (isso GARANTE que Observer detecta)
+    
     selectedGenreIds = ObservableList.of(currentIds);
 
-    // Busca filmes em background
+    
     _updateMoviesBySelectedGenres();
   }
 
@@ -155,7 +154,6 @@ abstract class _MovieListStoreBase with Store {
     currentPage = 1;
     hasMorePages = true;
 
-    // UMA ÚNICA REQUISIÇÃO com todos os gêneros selecionados
     final result = await getMoviesByGenre(
       GenreParams(genreIds: selectedGenreIds.toList(), page: 1),
     );
@@ -211,32 +209,28 @@ abstract class _MovieListStoreBase with Store {
 
     Either<Failure, List<Movie>>? result;
 
-    // Decide qual método chamar baseado no estado atual
     if (searchQuery.isNotEmpty) {
-      // Se está buscando
       result = await searchMovies(
         SearchParams(query: searchQuery, page: currentPage),
       );
     } else if (selectedGenreIds.isNotEmpty) {
-      // Se tem gêneros selecionados
       result = await getMoviesByGenre(
         GenreParams(genreIds: selectedGenreIds.toList(), page: currentPage),
       );
     } else {
-      // Filmes populares
       result = await getPopularMovies(PopularMoviesParams(page: currentPage));
     }
 
     result.fold(
       (failure) {
         errorMessage = failure.message;
-        currentPage--; // Reverte página em caso de erro
+        currentPage--; 
         isLoadingMore = false;
       },
       (movieList) {
         movies.addAll(movieList);
         hasMorePages =
-            movieList.length == 20; // Se retornou menos de 20, acabou
+            movieList.length == 20; 
         isLoadingMore = false;
       },
     );

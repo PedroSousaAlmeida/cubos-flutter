@@ -21,7 +21,6 @@ final sl = GetIt.instance;
 Future<void> init() async {
   // ==================== Features - Movies ====================
 
-  // Stores
   sl.registerFactory(
     () => MovieListStore(
       getPopularMovies: sl(),
@@ -37,14 +36,12 @@ Future<void> init() async {
     ),
   );
 
-  // Use Cases
   sl.registerLazySingleton(() => GetPopularMovies(sl()));
   sl.registerLazySingleton(() => GetGenres(sl()));
   sl.registerLazySingleton(() => GetMoviesByGenre(sl()));
   sl.registerLazySingleton(() => SearchMovies(sl()));
   sl.registerLazySingleton(() => GetMovieDetails(sl()));
 
-  // Repository
   sl.registerLazySingleton<MovieRepository>(
     () => MovieRepositoryImpl(
       remoteDataSource: sl(),
@@ -53,7 +50,6 @@ Future<void> init() async {
     ),
   );
 
-  // Data Sources
   sl.registerLazySingleton<MovieRemoteDataSource>(
     () => MovieRemoteDataSourceImpl(dio: sl()),
   );
@@ -64,18 +60,16 @@ Future<void> init() async {
 
   // ==================== Core ====================
 
-  // Network
+
   sl.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl(sl()));
 
-  // API Client
   sl.registerLazySingleton(() => ApiClient());
   sl.registerLazySingleton(() => sl<ApiClient>().dio);
 
   // ==================== External ====================
 
-  // Internet Connection Checker
+
   sl.registerLazySingleton(() => InternetConnectionChecker.createInstance());
 
-  // Hive (inicializar)
   await Hive.initFlutter();
 }
